@@ -45,9 +45,6 @@ class Arrival(Event):
 
     def event_manager(self, sim, time_for_event):
         entity_target = self.entity
-        print("QUI")
-        print("QUI")
-        print(entity_target.queue)
         queue_target = self.queue 
         # registro l'entità nel registro della simulazione
         self.sim.register(entity_target)
@@ -64,14 +61,25 @@ class Arrival(Event):
             sim.create_event_and_insert(type_of_event = "StartProcessDoctor", resource_target = resource_req, 
                                         entity_target = entity_target, queue_target = queue_target, store_target = None,
                                           time_for_event = time_for_event)
+            sim.create_event_and_insert(type_of_event = "Arrival", resource_target = None, entity_target = Patient(sim=sim, queue=queue_target), 
+                                    queue_target = queue_target, store_target = None, time_for_event = time_for_event)
             return 0
         if queue_target.current_length >= queue_target.capacity_max:  # l'entità non si mette in coda balking
             # -> se la coda ha raggiunto capacità massima il cliente non si mette in coda (balking)
             queue_target.lost_entities.update_stat_sum(value_to_add=1)
             self.sim.deregister(entity_target)
+            sim.create_event_and_insert(type_of_event = "Arrival", resource_target = None, entity_target = Patient(sim=sim, queue=queue_target), 
+                                    queue_target = queue_target, store_target = None, time_for_event = time_for_event)
             return 0
         # -> l'entità si mette in coda
+        queue_target.visualize_queue()
+        print("Paziente si mette in coda")
+        print("lunghezza coda prima dell'inserimento:")
+        print(queue_target.current_length)
         queue_target.insert_in_queue(entity_target, time_for_event) 
+        print("lunghezza coda dopo l'inserimento:")
+        print(queue_target.current_length)
+        queue_target.visualize_queue()
         # schedulazione evento "Arrival"
         sim.create_event_and_insert(type_of_event = "Arrival", resource_target = None, entity_target = Patient(sim=sim, queue=queue_target), 
                                     queue_target = queue_target, store_target = None, time_for_event = time_for_event)
@@ -108,12 +116,21 @@ class StartProcessDoctor(Event):
         # Aggiornamento variabili di stato
         print("Dottore che processa:")
         print(resource_target.name)
+        print("Stato e capacità del dottore prima del processamento")
+        print(resource_target.state)
+        print(resource_target.capacity_available)
         resource_target.update_resource_after_event(type_of_update = "StartProcess", entity_target = entity_target)
+        print("Stato e capacità del dottore prima del processamento")
+        print(resource_target.state)
+        print(resource_target.capacity_available)
         entity_target.update_entity_after_event(type_of_update = "StartProcess")
         # Aggiornamento coda: rimuovere il primo elemento
         if queue_target.current_length != 0: 
+            print("la coda non era vuota, rimuovo un nodo")
             # -> non sono nel caso in cui l'entità viene immediatamente processata senza entrare in coda
+            queue_target.visualize_queue()
             entity_target = queue_target.remove_first(sim) 
+            queue_target.visualize_queue()
         # Schedulazione evento "EndProcess"
         sim.create_event_and_insert(type_of_event = "EndProcessDoctor", resource_target = resource_target,
                                      entity_target = entity_target, queue_target = queue_target, store_target = None,
@@ -153,7 +170,13 @@ class StartProcessNurse(Event):
         resource_target.update_resource_after_event(type_of_update = "StartProcess", entity_target = entity_target)
         entity_target.update_entity_after_event(type_of_update = "StartProcess")
         # Aggiornamento store
-        store_target.add_in_store(self, entity_target, sim)
+        print("store in cui inserisco il paziente")
+        print(store_target.name)
+        print("capacità available prima dell'inserimento:")
+        print(store_target.capacity_available)
+        store_target.add_in_store(entity_target, sim)
+        print("capacità available dopo l'inserimento:")
+        print(store_target.capacity_available)
         # Schedulazione evento "EndProcess"
         sim.create_event_and_insert(type_of_event = "EndProcessNurse", resource_target = resource_target,
                                      entity_target = entity_target, queue_target = None, store_target = store_target,
@@ -186,11 +209,18 @@ class EndProcessDoctor(Event):
             print("coda non valido")
         if not isinstance(resource_target, Doctor):
             print("risorsa non valida")
+        print("Dottore che termina l'operaziore:")
+        print(resource_target.name)
+        print("Stato del dottore prima del termine:")
+        print(resource_target.state)
         resource_target.update_resource_after_event(type_of_update = "EndProcess", entity_target = entity_target)
+        print("Stato del dottore dopo il termine:")
+        print(resource_target.state)
         entity_target.update_entity_after_event(type_of_update = "EndProcess")
         # Schedulazione evento StartProcess (eventuale: deve esserci qualcuno in coda e ci devono essere sufficienti risorse)
         if queue_target.current_length > 0:
             # -> c'è qualcuno in coda
+            print("visto che c'è qualcuno in coda si schedula un altro starting, cerchiamo dottori available")
             entity_for_the_new_processing = queue_target.first_entity_in_queue()
             list_resources_available = sim.search_resource(entity_target = entity_for_the_new_processing, resource_type = "Doctor")
             if list_resources_available: # ci sono risorse available
@@ -206,11 +236,15 @@ class EndProcessDoctor(Event):
                 # non posso processare perchè risorsa occupata (e lo sono se sono in questo else) 
                 # allora vuol dire che prima o poi ci sarà un evento end_process e quindi un nuovo start
         if entity_target.store == None: 
+            print("il paziente non è ancora stato in stanza post ricovero, schedulo anche l'arrivo dagli infermieri")
             # -> l'entità non è ancora andata nella stanza (store) per il post operazione:
             #  se non ci sono posti liberi allora mando a casa il paziente, altrimenti inizio un processo rappresentante il soggiorno del paziente nella stanza
             list_available_nurses = sim.search_resource(entity_target = entity_target, resource_type = "Nurse")
+            print("infermieri available:")
+            print(list_available_nurses)
             if not list_available_nurses:
                 # -> non ci sono posti liberi
+                print("non ci sono posti liberi, mando il paziente a casa")
                 sim.deregister(entity_target)
             else:
                 # Schedulazione evento StartProcess (considero un delay temporale costante di 2min)
@@ -249,10 +283,16 @@ class EndProcessNurse(Event):
         if not isinstance(resource_target, Nurse):
             print("risorsa non valida")
         # Aggiornamento variabili di stato
+        print("store in cui inserisco il paziente")
+        print(store_target.name)
         resource_target.update_resource_after_event(type_of_update = "EndProcess", entity_target = entity_target)
         entity_target.update_entity_after_event(type_of_update = "EndProcess")
         # Aggiornamento store
+        print("capacità available prima dell'inserimento:")
+        print(store_target.capacity_available)
         store_target.remove_from_store(entity_target, sim)
+        print("capacità available dopo l'inserimento:")
+        print(store_target.capacity_available)
         # Cancellazione entità (uscita dal sistema)
         sim.deregister(entity_target)
 
@@ -275,7 +315,14 @@ class Failure(Event):
         self.name = "Failure"
     def event_manager(self, sim, time_for_event):
         # Aggiornare variabili di stato
+        if self.resource.state == "busy":
+            sim.create_event_and_insert(type_of_event = "Failure", resource_target = self.resource, time_for_event = time_for_event)
+            return 0
+        print("stato prima del failure:")
+        print(self.resource.state)
         self.resource.update_resource_after_event(type_of_update="Failure",entity_target=None)
+        print("stato dopo il failure:")
+        print(self.resource.state)
         # Schedulazione evento EventRecovery
         sim.create_event_and_insert(type_of_event = "Recovery", resource_target = self.resource, time_for_event = time_for_event)
         # Schedulazione evento Failure

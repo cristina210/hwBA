@@ -32,6 +32,7 @@ class SimulationManager:   # environment
         self.list_of_event = []  # da inizializzare con un arrivo (t_arrivo, arrivo)
         self.clock = 0
         self.registered_objects = {} 
+        random.seed(self.random_seed)
 
     # checcare se funziona questa funzione
     
@@ -67,15 +68,16 @@ class SimulationManager:   # environment
         if resource_type == None:
             print("errore nella ricerca di risorse")
         elif resource_type == "Doctor":
-            print("cerco dottori:")
+            print("cerco dottori in:")
             for obj_list in self.registered_objects.values():
                 for obj in obj_list:
                     print(obj.name)
                     if isinstance(obj, Doctor):   # solo per controllare se funziona
+                        print("stato:")
                         print(obj.state)
                         print("capacità richiesta:")
                         print(entity_target.capacity_req_to_doc)
-                        print("capacità available")
+                        print("capacità available:")
                         print(obj.capacity_available)
                     if (isinstance(obj, Doctor) and obj.state == "idle" 
                         and obj.queue == entity_target.queue and obj.capacity_available - entity_target.capacity_req_to_doc >= 0):
@@ -85,6 +87,15 @@ class SimulationManager:   # environment
             print("cerco nurse")
             for obj_list in self.registered_objects.values():
                 for obj in obj_list:
+                    if isinstance(obj, Nurse):   # solo per controllare se funziona
+                        print("stato:")
+                        print(obj.state)
+                        print("stanza assegnata")
+                        print(obj.store.name)
+                        print("capacità nella stanza:")
+                        print(obj.store.capacity_available)
+                        print("capacità available:")
+                        print(obj.store.capacity_available)
                     if isinstance(obj, Nurse) and obj.store.capacity_available - 1 >= 0 and obj.state == "idle":
                         print("trovato +1")
                         available_resources.append(obj)
@@ -131,7 +142,7 @@ class SimulationManager:   # environment
                 sim=self,
                 resource_current=resource_target,
                 entity_current=entity_target,
-                queue_current=queue_target,
+                store_current=store_target,
             )
         elif type_of_event == "EndProcessNurse":
             #time_for_event =self._schedule_next_time(time_for_event, type_distr = "norm", par_list = [self.mu_process_2, self.sig_process_2])
@@ -139,7 +150,7 @@ class SimulationManager:   # environment
                 sim=self,
                 resource_current=resource_target,
                 entity_current=entity_target,
-                queue_current=queue_target,
+                store_current=store_target,
             )
         elif type_of_event == "EndProcessDoctor":
             time_for_event =  self._schedule_next_time(time_for_event, type_distr = "norm", par_list = [self.mu_process_1, self.sig_process_1])

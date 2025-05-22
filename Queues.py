@@ -21,8 +21,12 @@ class QueueMember:
         self.predecessor = obj
 
     # sovrascrivo operatore di uguaglianza
-    def __eq__(self, other_q_member):
-        return self.entity == other_q_member.entity and self.successor == other_q_member.successor and self.predecessor == other_q_member.predecessor
+    #def __eq__(self, other_q_member):
+    #    return self.entity == other_q_member.entity and self.successor == other_q_member.successor and self.predecessor == other_q_member.predecessor
+
+
+    def __eq__(self, other):
+        return isinstance(other, QueueMember) and self.entity == other.entity
 
 class Queue:
     entity_counter = 0
@@ -54,6 +58,15 @@ class Queue:
         self.tail.successor = self.head
         self.head.predecessor = self.tail
 
+    def visualize_queue(self):
+        current = self.tail.successor
+        queue_str = "Tail -> "
+        while current != self.head:
+            priority = getattr(current.entity, "priority", "?")
+            queue_str += f"[P{priority}] -> "
+            current = current.successor
+        queue_str += "Head"
+        print(queue_str)
 
     def insert_in_queue(self, entity_target, time_for_event):
         # aggiornamento statistiche
@@ -65,8 +78,7 @@ class Queue:
             node_to_insert.predecessor = self.tail
             self.tail.successor = node_to_insert
             self.head.predecessor = node_to_insert
-            return 0
-        if node_to_insert.entity.priority <= self.tail.successor.entity.priority:
+        elif node_to_insert.entity.priority <= self.tail.successor.entity.priority:
             current_node = self.tail.successor 
             current_node.predecessor = node_to_insert
             node_to_insert.successor = current_node
@@ -110,8 +122,8 @@ class Queue:
         self.head.predecessor = precedent_node
         precedent_node.successor = self.head
         # Aggiornare statistiche riguardo la coda
-        self.len_queues.add_to_data_collected(self, time_to_insert = self.clock, value_to_add=self.current_length)
-        self.length_of_stay.add_to_data_collected(self, value_to_add = (sim.clock - node_to_remove.enter_time))
+        self.len_queues.add_to_data_collected(time_to_insert = sim.clock, value_to_add=self.current_length)
+        self.length_of_stay.add_to_data_collected( value_to_add = (sim.clock - node_to_remove.enter_time))
         # Ritorno l'entità associata al nodo rimosso
         return node_to_remove.entity
     
