@@ -36,7 +36,8 @@ class Queue:
         capacity_max: float = None
     ):
         self.name = self.name_unique()
-        self.lost_entities = DataStat( name = "lost_client_in"+self.name)  # contatore delle entità perse (balking)
+        self.lost_entities = DataStat( name = "lost_patient_in"+self.name)  # contatore delle entità perse (balking)
+        self.lost_entities_after_queue =  DataStat( name = "lost_patient_after_queue"+self.name)
         self.sim = sim
         self.capacity_max = capacity_max 
         self.current_length = 0
@@ -63,7 +64,8 @@ class Queue:
         queue_str = "Tail -> "
         while current != self.head:
             priority = getattr(current.entity, "priority", "?")
-            queue_str += f"[P{priority}] -> "
+            patient_name = getattr(current.entity, "name", "?")
+            queue_str += f"[P{priority} {patient_name}] ->"
             current = current.successor
         queue_str += "Head"
         print(queue_str)
@@ -94,7 +96,7 @@ class Queue:
             current_node = self.tail.successor
             next_node = current_node.successor
             while next_node != self.head:   # altri casi sono stati già considerati
-                if (node_to_insert.priority < next_node.priority) or (node_to_insert.priority == next_node.priority and node_to_insert.enter_time < next_node.enter_time):
+                if (node_to_insert.entity.priority < next_node.entity.priority) or (node_to_insert.entity.priority == next_node.entity.priority and node_to_insert.enter_time > next_node.enter_time):
                     # inserisco tra current e next il nodo
                     node_to_insert.successor = next_node
                     node_to_insert.predecessor = current_node
@@ -113,10 +115,10 @@ class Queue:
     def remove_first(self, sim):
         # Aggiornare variabili di stato
         node_to_remove = self.head.predecessor
-        self.current_length -= 1
-        if self.current_length <= 0 or self.tail.successor == self.head:
+        if self.current_length < 0 or self.tail.successor == self.head:
             print("Errore, grandezze riferite alla coda non feasible")
         # rimuovo il nodo
+        self.current_length -= 1
         node_to_remove = self.head.predecessor
         precedent_node = node_to_remove.predecessor
         self.head.predecessor = precedent_node
@@ -126,6 +128,7 @@ class Queue:
         self.length_of_stay.add_to_data_collected( value_to_add = (sim.clock - node_to_remove.enter_time))
         # Ritorno l'entità associata al nodo rimosso
         return node_to_remove.entity
+    
     
     def first_entity_in_queue(self):
         if self.head.predecessor == self.tail:

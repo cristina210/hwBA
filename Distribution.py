@@ -10,7 +10,7 @@ class Distribution:
         raise NotImplementedError("Il metodo sample() deve essere implementato nella sottoclasse")
 
 
-class NormalDistributionTrunc(Distribution):
+class NormalDistribution(Distribution):
     def __init__(self, mu: float, sig: float):
         if sig <= 0:
             raise ValueError("La deviazione standard deve essere positiva.")

@@ -17,7 +17,8 @@ class Store:
         self.lost_entities = DataStat( name = "lost_client_in"+self.name)  # contatore delle entità perse (balking)
         self.sim = sim
         self.capacity_max = capacity_max
-        self.capacity_available = capacity_max
+        self.capacity_available_on_hand = capacity_max
+        self.capacity_reserved = 0
         self.dim_store = DataTime( name="how_many_people_in_store_over_time"+self.name) 
         if self.sim is not None:
             self.sim.register(self)
@@ -28,11 +29,12 @@ class Store:
             
     def add_in_store(self, entity_target, sim):
         # Aggiornamento variabili di stato
+        self.capacity_reserved = self.capacity_reserved - 1
         entity_target.store = self
         self.entity_in_store.append(entity_target)
         # aggiorno statistiche
-        self.capacity_available = self.capacity_available - 1
-        self.dim_store.add_to_data_collected(time_to_insert=sim.clock, value_to_add = (self.capacity_max - self.capacity_available)) 
+        self.capacity_available_on_hand = self.capacity_available_on_hand - 1
+        self.dim_store.add_to_data_collected(time_to_insert=sim.clock, value_to_add = (self.capacity_max - self.capacity_available_on_hand)) 
         
 
     def remove_from_store(self, entity_target, sim):
@@ -41,8 +43,11 @@ class Store:
         else:
             self.entity_in_store.remove(entity_target)
             # aggiorno statistiche
-            self.capacity_available = self.capacity_available + 1
-            self.dim_store.add_to_data_collected(time_to_insert=sim.clock, value_to_add = (self.capacity_max - self.capacity_available)) 
+            self.capacity_available_on_hand = self.capacity_available_on_hand + 1
+            self.dim_store.add_to_data_collected(time_to_insert=sim.clock, value_to_add = (self.capacity_max - self.capacity_available_on_hand)) 
+        
+    def add_capacity_reserved(self):
+        self.capacity_reserved = self.capacity_reserved +  1
         
 
     @classmethod

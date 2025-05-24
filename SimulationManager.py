@@ -15,17 +15,16 @@ class SimulationManager:   # environment
         random_seed: int,
         name: str = None,
         par_arrival: float = 1,
-        par_process_1: list = [20,1],
-        par_process_2: float = [50,1],
+        par_process_1: float = 1.2,
+        par_process_2: list = [50,1],
         par_failure: float = 1000,
         par_recovery: float = 1000
     ):
         self.random_seed = random_seed
         self.name = name
         self.par_arrival = par_arrival
-        self.mu_process_1 = par_process_1[0]   # parametro per dottore
-        self.mu_process_2 = par_process_2[0]   # parametro per infermiere
-        self.sig_process_1 = par_process_1[1]
+        self.par_process_1 = par_process_1
+        self.mu_process_2 = par_process_2[0]   
         self.sig_process_2 = par_process_2[1]
         self.par_failure = par_failure
         self.par_recovery = par_recovery
@@ -43,6 +42,7 @@ class SimulationManager:   # environment
         if class_name not in self.registered_objects:
             self.registered_objects[class_name] = []
         self.registered_objects[class_name].append(obj)
+        
     def deregister(self, obj):
         class_name = obj.__class__.__name__
         if class_name in self.registered_objects:
@@ -68,41 +68,51 @@ class SimulationManager:   # environment
         if resource_type == None:
             print("errore nella ricerca di risorse")
         elif resource_type == "Doctor":
-            print("cerco dottori in:")
+            #print("cerco dottori available:")
             for obj_list in self.registered_objects.values():
                 for obj in obj_list:
-                    print(obj.name)
                     if isinstance(obj, Doctor):   # solo per controllare se funziona
-                        print("stato:")
-                        print(obj.state)
-                        print("capacità richiesta:")
-                        print(entity_target.capacity_req_to_doc)
-                        print("capacità available:")
-                        print(obj.capacity_available)
-                    if (isinstance(obj, Doctor) and obj.state == "idle" 
+                        #print(obj.name)
+                        #print("stato:")
+                        #print(obj.state)
+                        #print("capacità richiesta:")
+                        #print(entity_target.capacity_req_to_doc)
+                        #print("capacità available:")
+                        #print(obj.capacity_available)
+                        pass
+                    if (isinstance(obj, Doctor) and (obj.state == "idle" or  obj.state == "reserved")
                         and obj.queue == entity_target.queue and obj.capacity_available - entity_target.capacity_req_to_doc >= 0):
-                        print("trovato +1")
+                        #print("trovato +1")
                         available_resources.append(obj)
         elif resource_type == "Nurse":
-            print("cerco nurse")
+            print("cerco infermieri available:")
             for obj_list in self.registered_objects.values():
                 for obj in obj_list:
                     if isinstance(obj, Nurse):   # solo per controllare se funziona
-                        print("stato:")
-                        print(obj.state)
-                        print("stanza assegnata")
-                        print(obj.store.name)
-                        print("capacità nella stanza:")
-                        print(obj.store.capacity_available)
-                        print("capacità available:")
-                        print(obj.store.capacity_available)
-                    if isinstance(obj, Nurse) and obj.store.capacity_available - 1 >= 0 and obj.state == "idle":
-                        print("trovato +1")
+                        #print(obj.name)
+                        #print("stato:")
+                        #print(obj.state)
+                        #print("stanza assegnata")
+                        #print(obj.store.name)
+                        #print("capacità nella stanza:")
+                        #print(obj.store.capacity_available_on_hand)
+                        #print("capacità già riservata:")
+                        #print(obj.store.capacity_reserved)
+                        #print("capacità massima:")
+                        #print(obj.store.capacity_max)
+                        pass
+                    if isinstance(obj, Nurse) and (obj.store.capacity_available_on_hand - obj.store.capacity_reserved - 1) >= 0 and (obj.state != "failed"):
+                        #print("trovato +1")
                         available_resources.append(obj)
         else:
             print("Risorsa non riconosciuta")
-        print("risorse richieste available:")
-        print(available_resources)
+        #print("risorse richieste available:")
+        if not available_resources:
+            print("Nessuna risorsa disponibile.")
+        else:
+            #for res in available_resources:
+                #print(res.name)
+                pass
         return available_resources
     
     def extract_event(self, sim):
@@ -145,7 +155,7 @@ class SimulationManager:   # environment
                 store_current=store_target,
             )
         elif type_of_event == "EndProcessNurse":
-            #time_for_event =self._schedule_next_time(time_for_event, type_distr = "norm", par_list = [self.mu_process_2, self.sig_process_2])
+            time_for_event =self._schedule_next_time(time_for_event, type_distr = "norm", par_list = [self.mu_process_2, self.sig_process_2])
             new_event_start_process = EndProcessNurse(
                 sim=self,
                 resource_current=resource_target,
@@ -153,7 +163,7 @@ class SimulationManager:   # environment
                 store_current=store_target,
             )
         elif type_of_event == "EndProcessDoctor":
-            time_for_event =  self._schedule_next_time(time_for_event, type_distr = "norm", par_list = [self.mu_process_1, self.sig_process_1])
+            time_for_event =  self._schedule_next_time(time_for_event, type_distr = "exp", par_list = self.par_process_1)
             new_event_start_process = EndProcessDoctor(
                 sim=self,
                 resource_current=resource_target,
@@ -194,7 +204,7 @@ class SimulationManager:   # environment
         if type_distr == "norm":
             mu = par_list[0]
             sig = par_list[1]
-            dist = NormalDistributionTrunc(mu=mu, sig=sig)
+            dist = NormalDistribution(mu=mu, sig=sig)
             interarrival_time = dist.sample()
         elif type_distr == "exp":
             dist = ExponentialDistribution(lambd=par_list)
@@ -253,7 +263,82 @@ class SimulationManager:   # environment
         for time, event in sorted(lista_eventi, key=lambda x: x[0]):
             nome_evento = getattr(event, 'name', type(event).__name__)
             print(f"- Tempo: {time:.1f}, Evento: {nome_evento}")
-    
+
+
+
+    def visualize_queue_doctors_nurses(self):
+        queues = self.registered_objects.get("Queue", [])
+        if not queues:
+            print("No queue registered.")
+            return
+        queue = queues[0]  # la prima e unica coda
+        
+        doctors_list = self.registered_objects.get("Doctor", [])
+        nurses_list = self.registered_objects.get("Nurse", [])
+        
+        # Costruisco la stringa della coda
+        current = queue.tail.successor
+        queue_str = "Queue Tail -> "
+        while current != queue.head:
+            priority = getattr(current.entity, "priority", "?")
+            patient_name = getattr(current.entity, "name", "Unknown")
+            queue_str += f"[P{priority} {patient_name}] -> "
+            current = current.successor
+        queue_str += "Queue Head"
+        
+        max_width = max(len(queue_str), 60)
+        
+        # Trovo posizione di "Queue Head" nella stringa per allineare sotto la freccia
+        pos_queue_head = queue_str.find("Queue Head")
+        if pos_queue_head == -1:
+            pos_queue_head = len(queue_str) // 2  # fallback
+        
+        # Stampo la coda centrata
+        print(queue_str.center(max_width))
+        
+        # Costruisco l'indentazione basata sulla posizione di "Queue Head" per allineare freccia e tutto il resto
+        indent = " " * pos_queue_head
+        
+        # Frecce verso i dottori allineate sotto "Queue Head"
+        print(f"{indent}↓")
+        
+        # Titolo dottori con indentazione
+        print(f"{indent}Doctors Processing Patients:")
+        
+        # Stampo i dottori con pazienti, indentati
+        for doc in doctors_list:
+            patients_processing = getattr(doc, "entity_processed", [])
+            patient_names = [getattr(p, "name", "Unknown") for p in patients_processing]
+            state = doc.state
+            line = f"{doc.name} [{state}]: " + (", ".join(patient_names) if patient_names else "Idle")
+            print(f"{indent}{line}")
+        
+        # Frecce verso pazienti in transito, indentate
+        print(f"\n{indent}↓")
+        
+        # Blocchetto pazienti in transito dai dottori verso infermieri
+        print(f"{indent}Patients transitioning from doctors to nurses")
+        for nurse in nurses_list:
+            patients_assigned = getattr(nurse, "entity_who_reserved", [])
+            patient_names = [getattr(p, "name", "Unknown") for p in patients_assigned]
+            line = f"{nurse.name} : " + (", ".join(patient_names) if patient_names else "No patient")
+            print(f"{indent}{line}")
+        
+        # Frecce verso infermieri, indentate
+        print(f"\n{indent}↓")
+        
+        # Titolo infermieri, indentato
+        print(f"{indent}Nurses Processing Patients:")
+        
+        # Infermieri e pazienti, indentati
+        for nurse in nurses_list:
+            patients_assigned = getattr(nurse, "entity_processed", [])
+            patient_names = [getattr(p, "name", "Unknown") for p in patients_assigned]
+            state = nurse.state
+            line = f"{nurse.name} [{state}]: " + (", ".join(patient_names) if patient_names else "No patient")
+            print(f"{indent}{line}")
+
+        
 
 
 
