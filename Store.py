@@ -14,7 +14,6 @@ class Store:
     ):
         self.name = self.name_unique()
         self.entity_in_store = [] # lista delle entità in quel momento
-        self.lost_entities = DataStat( name = "lost_client_in"+self.name)  # contatore delle entità perse (balking)
         self.sim = sim
         self.capacity_max = capacity_max
         self.capacity_available_on_hand = capacity_max
@@ -26,6 +25,7 @@ class Store:
     def reset(self):
         self.entity_in_store = []
         self.capacity_available = self.capacity_max
+        self.entity_counter = 0
             
     def add_in_store(self, entity_target, sim):
         # Aggiornamento variabili di stato

@@ -45,6 +45,7 @@ class Arrival(Event):
     def event_manager(self, sim, time_for_event):
         entity_target = self.entity
         queue_target = self.queue 
+        sim.entity_arrived = sim.entity_arrived + 1
         #print("Arriva il paziente:")
         #print(entity_target.name)
         # registro l'entità nel registro della simulazione
@@ -84,14 +85,14 @@ class Arrival(Event):
                                     queue_target = queue_target, store_target = None, time_for_event = time_for_event)
             return 0
         # -> l'entità si mette in coda
-        queue_target.visualize_queue()
+        # queue_target.visualize_queue()
         #print("Paziente si mette in coda")
         #print("lunghezza coda prima dell'inserimento:")
         #print(queue_target.current_length)
         queue_target.insert_in_queue(entity_target, time_for_event) 
         #print("lunghezza coda dopo l'inserimento:")
         #print(queue_target.current_length)
-        queue_target.visualize_queue()
+        # queue_target.visualize_queue()
         # schedulazione evento "Arrival"
         sim.create_event_and_insert(type_of_event = "Arrival", resource_target = None, entity_target = Patient(sim=sim, queue=queue_target), 
                                     queue_target = queue_target, store_target = None, time_for_event = time_for_event)
@@ -143,7 +144,7 @@ class StartProcessDoctor(Event):
         #print(resource_target.capacity_available)
         entity_target.update_entity_after_event(type_of_update = "StartProcess")
         #print("Si osserva la coda:")
-        queue_target.visualize_queue()
+        #queue_target.visualize_queue()
         # Aggiornamento coda: rimuovere il primo elemento
         if queue_target.current_length != 0: 
             #print("la coda non era vuota, rimuovo il paziente che inizia il processamento")
@@ -153,9 +154,10 @@ class StartProcessDoctor(Event):
             entity_target = queue_target.remove_first(sim) 
             #print("lunghezza coda dopo la rimozione:")
             #print(queue_target.current_length)
-            queue_target.visualize_queue()
+            #queue_target.visualize_queue()
         else:
-            print("Non rimuovo alcun paziente")
+            #print("Non rimuovo alcun paziente")
+            pass
         # Schedulazione evento "EndProcess"
         sim.create_event_and_insert(type_of_event = "EndProcessDoctor", resource_target = resource_target,
                                      entity_target = entity_target, queue_target = queue_target, store_target = None,
@@ -287,8 +289,8 @@ class EndProcessDoctor(Event):
                 # non posso processare perchè risorsa occupata (e lo sono se sono in questo else) 
                 # allora vuol dire che prima o poi ci sarà un evento end_process e quindi un nuovo start
         if entity_target.store == None: 
-            print("il paziente appena processato non è ancora stato in stanza post ricovero, schedulo anche l'arrivo dagli infermieri")
-            print(entity_target.name)
+            #print("il paziente appena processato non è ancora stato in stanza post ricovero, schedulo anche l'arrivo dagli infermieri")
+            #print(entity_target.name)
             # -> l'entità non è ancora andata nella stanza (store) per il post operazione:
             #  se non ci sono posti liberi allora mando a casa il paziente, altrimenti inizio un processo rappresentante il soggiorno del paziente nella stanza
             list_available_nurses = sim.search_resource(entity_target = entity_target, resource_type = "Nurse")

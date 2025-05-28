@@ -66,6 +66,7 @@ class Doctor(Resource):
     def reset(self):
         self.capacity_available = self.capacity_max
         self.state = "idle"
+        self.entity_counter = 0
 
 class Nurse(Resource):
     entity_counter = 0
@@ -76,7 +77,6 @@ class Nurse(Resource):
         self.name = self.name_unique()
         self.entity_who_reserved = []   # paziente che ha riservato il posto
         self.entity_processed = []
-        self.num_pat = DataTime( name="num_patients"+self.name) 
         self.delta_skill_level = DataWithoutTime(name="delta_skill_level"+self.name)
         if self.sim is not None:
             self.sim.register(self)
@@ -94,7 +94,7 @@ class Nurse(Resource):
             self.entity_who_reserved.remove(entity_target)
             self.entity_processed.append(entity_target)
         elif type_of_update == "EndProcess":
-            self.delta_skill_level.add_to_data_collected(value_to_add = min(0,(entity_target.skill_level_req - self.skill_level)))
+            self.delta_skill_level.add_to_data_collected(value_to_add = abs(min(0,(self.skill_level - entity_target.skill_level_req))))
             self.state = "idle"
             self.entity_processed.remove(entity_target)
         elif type_of_update == "Failure":

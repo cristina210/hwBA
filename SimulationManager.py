@@ -32,6 +32,7 @@ class SimulationManager:   # environment
         self.clock = 0
         self.registered_objects = {} 
         random.seed(self.random_seed)
+        self.entity_arrived = 0
 
     # checcare se funziona questa funzione
     
@@ -85,7 +86,7 @@ class SimulationManager:   # environment
                         #print("trovato +1")
                         available_resources.append(obj)
         elif resource_type == "Nurse":
-            print("cerco infermieri available:")
+            #print("cerco infermieri available:")
             for obj_list in self.registered_objects.values():
                 for obj in obj_list:
                     if isinstance(obj, Nurse):   # solo per controllare se funziona
@@ -108,7 +109,8 @@ class SimulationManager:   # environment
             print("Risorsa non riconosciuta")
         #print("risorse richieste available:")
         if not available_resources:
-            print("Nessuna risorsa disponibile.")
+            pass
+            #print("Nessuna risorsa disponibile.")
         else:
             #for res in available_resources:
                 #print(res.name)
@@ -126,7 +128,7 @@ class SimulationManager:   # environment
 
         event_time = next_event[0]
         event_obj = next_event[1]
-        print("EVENTO:")
+        #print("EVENTO:")
         print(event_obj.name)
 
         # Aggiorna l'orologio della simulazione

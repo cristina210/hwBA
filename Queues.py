@@ -58,6 +58,7 @@ class Queue:
         self.head = QueueMember(entity_which_rapresent=None)
         self.tail.successor = self.head
         self.head.predecessor = self.tail
+        self.entity_counter = 0
 
     def visualize_queue(self):
         current = self.tail.successor
@@ -72,7 +73,7 @@ class Queue:
 
     def insert_in_queue(self, entity_target, time_for_event):
         # aggiornamento statistiche
-        self.len_queues.add_to_data_collected( time_to_insert = time_for_event, value_to_add=self.current_length)
+        self.len_queues.add_to_data_collected( time_to_insert = time_for_event, value_to_add=self.current_length+1)
         """Inserisce questo Qmember dopo un altro Qmember (nella stessa coda) in base alla priorità."""
         node_to_insert = QueueMember(entity_which_rapresent = entity_target, enter_time = time_for_event )
         if self.current_length == 0:

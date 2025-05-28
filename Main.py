@@ -7,12 +7,12 @@ from Entity import *
 
 
 seed = 42
-period_max = 20
-num_sim = 1 # numero di simulazioni
-par_arrival = 0.95  # lambda 
+period_max = 100
+num_sim = 2 # numero di simulazioni
+par_arrival = 0.7  # lambda 
 par_recovery = 0.9    # parametro di intertempo (esponenziale) che intercorre tra failure e guarigione
 par_failure = 0.03    # parametro di intertempo (esponenziale) tra due failure
-par_process_1 = 0.4    # lambda
+par_process_1 = 0.5   # lambda
 par_process_2 = [3,1]
 
 # inizializzo l'ambiente di simulazione
@@ -20,18 +20,16 @@ sim = SimulationManager(random_seed = seed, par_arrival=par_arrival, par_process
 
 for i in range(0,num_sim):
 
-    # resetto l'ambiente di simulazione
-    sim.reset()
     print("Inizio simulazione")
     print(i)
-    
-    # resetto le statistiche
-    # sim.reset_all_stat(list_obj=[queue_1,store_1,store_2,store_3,nurse_1,nurse_2,nurse_3,doc_1,doc_2,doc_3])
+
+    # resetto ambiente di simulazione
+    sim.reset()
 
     # inizializzo code e store
-    queue_1 = Queue(sim=sim, capacity_max=4)
+    queue_1 = Queue(sim=sim, capacity_max=10)
     store_1 = Store(sim=sim, capacity_max=1)
-    store_2 = Store(sim=sim, capacity_max=2)
+    store_2 = Store(sim=sim, capacity_max=3)
     store_3 = Store(sim=sim, capacity_max=2)
 
     # inizializzo risorse
@@ -47,17 +45,37 @@ for i in range(0,num_sim):
     while (sim.clock < period_max or len(sim.list_of_event) == 0):   # eventualmente spostarlo in un metodo nella classe SimulationManager
         print("------------------------------------------------------------------------------------------")
         print("------------------------------------------------------------------------------------------")
-        sim.stamp_list_events()
+        #sim.stamp_list_events()
         current_time =  sim.extract_event(sim=sim)
         print("Clock di simulazione")
         print(current_time)
-        sim.visualize_queue_doctors_nurses()
+        #sim.visualize_queue_doctors_nurses()
         print("------------------------------------------------------------------------------------------")
         print("------------------------------------------------------------------------------------------")
         if current_time == -1:
             break
-    # resetto l'ambiente di simulazione
-
-    # fare cose con le statistiche: salvarsele o fare plot
-    # per esempio con la statistica quella con il tempo sarebbe utile fare una classe dove si calcola l'integrale: magari come metodo di DataTime
-        
+    print("STATISTICHE")
+    print("Entità totali arrivate in totale nel sistema:")
+    print(sim.entity_arrived)
+    print("Entità perse per balking in coda:")
+    queue_1.lost_entities.print_object_data_collection()
+    print("Entità perse perchè non ci sono sufficienti posti nelle stanze:")
+    queue_1.lost_entities_after_queue.print_object_data_collection()
+    queue_1.length_of_stay.plot_no_time(title="Tempo di permanenza in coda per ogni entità")
+    queue_1.len_queues.plot_in_time(queue_1.capacity_max, title="Lunghezza della coda nel tempo")
+    print("Media integrale lunghezza della coda:")
+    print(queue_1.len_queues.calculate_integral_mean())
+    print("Media integrale dimensione store1")
+    print(store_1.dim_store.calculate_integral_mean())
+    print("Media integrale dimensione store2")
+    print(store_2.dim_store.calculate_integral_mean())
+    print("Media integrale dimensione store3")
+    print(store_3.dim_store.calculate_integral_mean())
+    nurse_1.delta_skill_level.plot_no_time("Differenza (positiva) di skill level tra paziente-infermiere")
+    nurse_2.delta_skill_level.plot_no_time("Differenza (positiva) di skill level tra paziente-infermiere")
+    nurse_3.delta_skill_level.plot_no_time("Differenza (positiva) di skill level tra paziente-infermiere")
+    store_1.dim_store.plot_in_time(store_1.capacity_max , title="Numero di pazienti nella stanza 1 nel tempo")
+    store_2.dim_store.plot_in_time(store_2.capacity_max , title="Numero di pazienti nella stanza 2 nel tempo")
+    store_3.dim_store.plot_in_time(store_3.capacity_max , title="Numero di pazienti nella stanza 3 nel tempo")
+    nurse_3.delta_skill_level.print_object_data_collection()
+    

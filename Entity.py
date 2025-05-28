@@ -50,7 +50,7 @@ class Patient(Entity):
         return random.randint(1, 4)
     
     def _generate_skill_level(self):
-        return random.randint(1, 3)
+        return random.randint(1, 4)
     
     def update_entity_after_event(self, type_of_update):
         if type_of_update == "StartProcess":
@@ -64,6 +64,9 @@ class Patient(Entity):
         else:
             print("update non riconosciuto")
 
+    def reset(self):
+        self.entity_counter = 0
+   
     @classmethod
     def name_unique(cls):
         cls.entity_counter += 1
