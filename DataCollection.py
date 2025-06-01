@@ -1,12 +1,17 @@
 import matplotlib.pyplot as plt
-import numpy as np
+from matplotlib.ticker import MaxNLocator
 
 class DataCollection:
+    '''
+    Classe astratta per la raccolta di dati statistici all'interno di una simulazione.
+    Fornisce un'interfaccia comune per l'inizializzazione, l'aggiunta di dati,
+    il reset e la stampa delle collezioni di dati.
+    '''
     def __init__(
         self,
         name: str = None,
-        stats_only=False,  # Ho impostato un valore di default per chiarezza
-        time=False         # Ho impostato un valore di default per chiarezza
+        stats_only=False,  
+        time=False        
     ):
         if stats_only and time:
             print("Statistica non supportata: stats_only e time both activated")
@@ -17,19 +22,34 @@ class DataCollection:
             self.value = 0
         else:
             self.value = []
-            # lista di tuple nel caso di time == True, lista di valori altrimenti. prima posizione = tempo
 
     def add_to_data_collected(self, *argv): 
+        '''
+        Metodo astratto per aggiungere dati alla collezione.
+        Deve essere implementato dalle sottoclassi.
+        '''
         pass
 
     def reset(self):
+        '''
+        Metodo astratto per resettare la collezione di dati.
+        Deve essere implementato dalle sottoclassi.
+        '''
         pass
 
     def print_object_data_collection(self):
+        '''
+        Metodo astratto per stampare i dati della collezione.
+        Deve essere implementato dalle sottoclassi.
+        '''
         pass
 
 class DataTime(DataCollection):
-    #def __init__(self, sim: SimulationManager = None, name: str = None):
+    '''
+    Classe per la raccolta di dati che variano nel tempo.
+    Memorizza coppie (tempo, valore) e fornisce metodi per il calcolo
+    della media integrale e la visualizzazione tramite grafici a gradini.
+    '''
     def __init__(self, name: str = None):
         super().__init__( name=name, time=True, stats_only=False)
         self.reset()
@@ -48,6 +68,10 @@ class DataTime(DataCollection):
     
 
     def calculate_integral_mean(self):
+        '''
+        Calcola la media integrale (media temporale) della variabile di stato.
+        Utilizzabile per variabili che cambiano a gradini.
+        '''
         area = 0
         for i in range(len(self.value) - 1):
             t1, v1 = self.value[i]
@@ -85,6 +109,10 @@ class DataTime(DataCollection):
 
 
 class DataWithoutTime(DataCollection):
+    '''
+    Classe per la raccolta di dati che non sono associati a un timestamp specifico.
+    Memorizza una sequenza di valori.
+    '''
     def __init__(self,name: str = None, stats_only=False):
         super().__init__( name=name, stats_only=stats_only, time=False)
         self.reset()
@@ -113,14 +141,22 @@ class DataWithoutTime(DataCollection):
         plt.ylabel("Valore")
         plt.title(title)
         plt.grid(axis='y', linestyle='--', linewidth=0.5)
+        plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
+
         plt.tight_layout()
         plt.show()
 
 class DataStat(DataCollection):
+    '''
+    Classe per la raccolta di una singola statistica aggregata come una somma
+    Memorizza un singolo valore numerico.
+    '''
     def __init__(self, name: str = None, stats_only=True):
         super().__init__( name=name, stats_only=stats_only, time=False)
 
     def update_stat_sum(self, value_to_add):
+        ''' Aggiorna il valore aggregato della statistica aggiungendo il valore fornito.
+        Questo metodo è specifico per le statistiche che rappresentano una somma o un conteggio.'''
         self.value = self.value + value_to_add
         return 0
     
