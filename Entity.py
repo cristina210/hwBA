@@ -44,7 +44,7 @@ class Patient(Entity):
         self.resources = None    # Risorsa assegnata al paziente
         self.name = self.name_unique()
         self.length_of_stay_room = self._create_length_of_stay()   # Tempo di permanenza richiesto nella stanza
-        self.skill_level_req = self._generate_skill_level()   # Livello di skill richiesto per il trattamento
+        self.skill_level_req = self._generate_skill_level()   # Livello di skill richiesto
         self.capacity_req_to_doc = capacity_req_to_doc    # Capacità richiesta al medico
     
     def _create_capacity(self):

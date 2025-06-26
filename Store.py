@@ -18,7 +18,7 @@ class Store:
         capacity_max: float = None
     ):
         self.name = self.name_unique()
-        self.entity_in_store = [] # lista delle entità in quel momento
+        self.entity_in_store = []            # lista delle entità presenti nello store in quel momento
         self.sim = sim
         self.capacity_max = capacity_max
         self.capacity_available_on_hand = capacity_max

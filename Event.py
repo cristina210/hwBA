@@ -19,11 +19,11 @@ class Event:
         queue_current: Queue = None,
         store_current: Store = None
     ):
-        self.entity = entity_current   # L'entità su cui l'evento ha un impatto (può essere None)
-        self.resource = resource_current   # La risorsa impattata dall'evento (può essere None)
-        self.sim = sim                   # Riferimento al gestore della simulazione
-        self.queue = queue_current    # La coda associata all'evento (può essere None)
-        self.store = store_current   # Lo store (es. stanza) associato all'evento (può essere None)
+        self.entity = entity_current        # L'entità su cui l'evento ha un impatto (può essere None)
+        self.resource = resource_current    # La risorsa impattata dall'evento (può essere None)
+        self.sim = sim                      # Riferimento al gestore della simulazione
+        self.queue = queue_current          # La coda associata all'evento (può essere None)
+        self.store = store_current          # Lo store (es. stanza) associato all'evento (può essere None)
     def event_manager(self, time_for_event, *args, **kwargs):
         ''' Metodo astratto per la gestione logica dell'evento.
             Questo metodo è implementato da ogni sottoclasse concreta di Evento.
@@ -249,7 +249,7 @@ class EndProcessDoctor(Event):
             entity_for_the_new_processing = queue_target.first_entity_in_queue()  # Vede il primo paziente in coda
             list_resources_available = sim.search_resource(entity_target = entity_for_the_new_processing, resource_type = "Doctor")
 
-            if list_resources_available: #
+            if list_resources_available: 
                 # -> Ci sono risorse (dottori) disponibili
                 doc_available = list_resources_available[0]
                 doc_available.update_resource_after_event(type_of_update = "EndProcess2", entity_target= entity_for_the_new_processing)
@@ -282,7 +282,7 @@ class EndProcessDoctor(Event):
                 nurse_available.update_resource_after_event(type_of_update = "EndProcessDoctor", entity_target= entity_target)
                 nurse_available.store.add_capacity_reserved()
 
-                # Schedulazione evento StartProcessNurse (considero un delay temporale costante di 2min)
+                # Schedulazione evento StartProcessNurse (considero un delay temporale costante di 2)
                 sim.create_event_and_insert(type_of_event = "StartProcessNurse", resource_target = nurse_available, 
                                             entity_target = entity_target, queue_target = None, store_target = nurse_available.store, 
                                             time_for_event = time_for_event + 2)

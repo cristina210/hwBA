@@ -9,10 +9,10 @@ class QueueMember:
     Ogni QueueMember incapsula un'entità (es. un paziente) e gestisce i riferimenti
     al membro successivo e precedente nella coda, formando una lista doppiamente linkata.'''
     def __init__(self, entity_which_rapresent, enter_time=0.0):
-        self.entity = entity_which_rapresent   # L'entità associata (es. paziente
-        self.enter_time = enter_time   # Tempo di ingresso dell'entità in coda
-        self.successor = None    # Riferimento al QueueMember successivo nella coda
-        self.predecessor = None  # Riferimento al QueueMember precedente nella coda
+        self.entity = entity_which_rapresent   # L'entità associata (es. paziente)
+        self.enter_time = enter_time           # Tempo di ingresso dell'entità in coda
+        self.successor = None                  # Riferimento al QueueMember successivo nella coda
+        self.predecessor = None                # Riferimento al QueueMember precedente nella coda
 
     def __eq__(self, other):
         '''   Definisce l'operatore di uguaglianza per gli oggetti QueueMember.
@@ -30,11 +30,11 @@ class Queue:
         capacity_max: float = None
     ):
         self.name = self.name_unique()
-        self.lost_entities = DataStat( name = "lost_patient_in"+self.name)  # Contatore delle entità perse per "balking" (non entrano in coda perché piena)
-        self.lost_entities_after_queue =  DataStat( name = "lost_patient_after_queue"+self.name)  # Contatore delle entità perse dopo essere uscite dalla coda (es. non trovano risorse (infermieri) successive)
+        self.lost_entities = DataStat( name = "lost_patient_in"+self.name)                        # Contatore delle entità perse per "balking" (non entrano in coda perché piena)
+        self.lost_entities_after_queue =  DataStat( name = "lost_patient_after_queue"+self.name)  # Contatore delle entità perse dopo essere uscite dalla coda (non trovano risorse (infermieri) successive)
         self.sim = sim
-        self.capacity_max = capacity_max   # Lunghezza massima della coda
-        self.current_length = 0  # Lunghezza attuale della coda
+        self.capacity_max = capacity_max                                                          # Lunghezza massima della coda
+        self.current_length = 0                                                                   # Lunghezza attuale della coda
 
         # Nodi "sentinella": non contengono entità reali,
         # ma semplificano le operazioni di inserimento/rimozione.
@@ -123,7 +123,6 @@ class Queue:
         entity_target.queue = self   # per tenere traccia in quale coda è stato
         self.current_length += 1
 
-        # trovo obj: la prima entità che si incontra con medesima priorità dell'oggetto da inserire
 
     def remove_first(self, sim):
         ''' Rimuove l'entità in testa alla coda.

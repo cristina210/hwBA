@@ -32,11 +32,11 @@ class SimulationManager:
         self.par_failure = par_failure
         self.par_recovery = par_recovery
 
-        self.list_of_event = []     # Lista degli eventi futuri, ordinata per tempo di occorrenza
-        self.clock = 0         # Orologio di simulazione, rappresenta il tempo corrente
-        self.registered_objects = {}    # Dizionario per tenere traccia di tutti gli oggetti presenti all'interno della simulazione (entità, risorse, ecc.)
+        self.list_of_event = []          # Lista degli eventi futuri, ordinata per tempo di occorrenza
+        self.clock = 0                   # Orologio di simulazione, rappresenta il tempo corrente
+        self.registered_objects = {}     # Dizionario per tenere traccia di tutti gli oggetti presenti all'interno della simulazione (entità, risorse, ecc.)
         random.seed(self.random_seed)
-        self.entity_arrived = 0    # Contatore delle entità totali arrivate nel sistema
+        self.entity_arrived = 0          # Contatore delle entità totali arrivate nel sistema
     
     def register(self, obj):
         '''Registra un oggetto'''
@@ -58,7 +58,7 @@ class SimulationManager:
 
 
     def search_resource(self, entity_target, resource_type=None):
-        '''Cerca risorse disponibili di un tipo specifico che possono servire un'entità target.'''
+        '''Cerca risorse disponibili di un tipo specifico che possono processare un'entità target.'''
         available_resources = []
         if resource_type == None:
             print("errore nella ricerca di risorse")

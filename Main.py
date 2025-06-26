@@ -7,17 +7,17 @@ from Entity import *
 from output_analysis import *
 
 
-seed = 43  # Valore del seme per la generazione casuale (riproducibilità)
-period_max = 100  # Numero massimo di unità di tempo della simulazione
-num_sim = 1  # Numero di simulazioni da eseguire
-par_arrival = 0.6  # Tasso di arrivo (λ) per il processo di arrivo (distribuzione esponenziale)
-par_recovery = 0.9  # Tasso di recupero (λ) dalla failure, ovvero il parametro della distribuzione esponenziale del tempo di guarigione
-par_failure = 0.0003  # Tasso di guasto (λ), ovvero il parametro della distribuzione esponenziale del tempo tra due guasti
-par_process_1 = 0.5  # Tasso di servizio (λ) per il primo processo (dottori)
-par_process_2 = [3, 1]  # Parametri per il secondo processo (media e deviazione standard)
-cap_max_queue1 = 15  # Capacità massima della coda 1 (numero massimo di elementi accodabili)
+seed = 42  
+period_max = 45                         # Numero massimo di unità di tempo della simulazione
+num_sim = 1                             # Numero di simulazioni da eseguire
+par_arrival = 0.6                       # Tasso di arrivo (λ) per il processo di arrivo (distribuzione esponenziale)
+par_recovery = 0.9                      # Tasso di recupero (λ) dal failure, ovvero il parametro della distribuzione esponenziale del tempo di guarigione
+par_failure = 0.0003                    # Tasso di guasto (λ), ovvero il parametro della distribuzione esponenziale del tempo tra due guasti
+par_process_1 = 0.5                     # Tasso di servizio (λ) per il primo processo (dottori)
+par_process_2 = [3, 1]                  # Parametri per il secondo processo (media e deviazione standard di una normale)
+cap_max_queue1 = 6                      # Capacità massima della coda 1
 
-# inizializzazione l'ambiente di simulazione
+# Inizializzazione dell'ambiente di simulazione
 sim = SimulationManager(random_seed = seed, par_arrival=par_arrival, par_process_1=par_process_1, par_process_2=par_process_2, par_recovery=par_recovery, par_failure=par_failure)  # se facciamo poi il ciclo qua si può mettere un nome che cambia ogni volta
 
 list_stat_length_of_stay = []
@@ -43,20 +43,20 @@ for i in range(0,num_sim):
     doc_1 = Doctor(sim=sim, queue = queue_1)
     doc_2 = Doctor(sim=sim, queue = queue_1)
 
-    # Inserimento i primi eventi nella lista degli eventi (quelli autoschedulanti: arrivi e failure)
+    # Inserimento dei primi eventi nella lista degli eventi (quelli autoschedulanti: arrivi e failure)
     sim.initialize_first_events(queue_1, list_doc=[doc_1,doc_2], list_nurse=[nurse_1, nurse_2,nurse_3])
 
     # Simulazione:
     while (sim.clock < period_max or len(sim.list_of_event) == 0):   
-        print("------------------------------------------------------------------------------------------")
-        print("------------------------------------------------------------------------------------------")
+        #print("------------------------------------------------------------------------------------------")
+        #print("------------------------------------------------------------------------------------------")
         # sim.stamp_list_events()
         current_time =  sim.extract_event(sim=sim)
-        print("Clock di simulazione")
-        print(current_time)
+        #print("Clock di simulazione")
+        #print(current_time)
         # sim.visualize_queue_doctors_nurses()
-        print("------------------------------------------------------------------------------------------")
-        print("------------------------------------------------------------------------------------------")
+        #print("------------------------------------------------------------------------------------------")
+        #print("------------------------------------------------------------------------------------------")
         if current_time == -1:
             break
 

@@ -148,7 +148,7 @@ class DataWithoutTime(DataCollection):
 
 class DataStat(DataCollection):
     '''
-    Classe per la raccolta di una singola statistica aggregata come una somma
+    Classe per la raccolta di una singola statistica aggregata, come per esempio una somma,
     Memorizza un singolo valore numerico.
     '''
     def __init__(self, name: str = None, stats_only=True):

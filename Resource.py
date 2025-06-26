@@ -24,11 +24,11 @@ class Doctor(Resource):
     entity_counter = 0
     def __init__(self, sim=None, capacity_max = 1, queue = None):
         super().__init__(sim=sim)
-        self.queue = queue   # Riferimento alla coda di attesa associata a questo dottore
-        self.capacity_max = capacity_max     # Capacità massima 
-        self.capacity_available = self.capacity_max   # Capacità attualmente disponibile
-        self.entity_who_reserved = []    # Lista delle entità che hanno prenotato questa risorsa
-        self.entity_processed = []    # Lista delle entità attualmente in fase di processamento
+        self.queue = queue                                  # Riferimento alla coda di attesa associata a questo dottore
+        self.capacity_max = capacity_max                    # Capacità massima 
+        self.capacity_available = self.capacity_max         # Capacità attualmente disponibile
+        self.entity_who_reserved = []                       # Lista delle entità che hanno prenotato questa risorsa
+        self.entity_processed = []                          # Lista delle entità attualmente in fase di processamento
         self.name = self.name_unique()
         if self.sim is not None:
             self.sim.register(self)
@@ -77,7 +77,7 @@ class Doctor(Resource):
             self.state = "idle"
 
         elif type_of_update == "Arrival":
-            # Evento: Un paziente appena arrivato prenota il dottore per un servizio immediato
+            # Evento: Un paziente appena arrivato prenota il dottore
             self.state = "reserved"
             self.entity_who_reserved.append(entity_target)
 
@@ -97,10 +97,10 @@ class Nurse(Resource):
     def __init__(self, sim=None, skill_level=1, store = None):
         super().__init__(sim=sim)
         self.skill_level = skill_level
-        self.store = store   # Riferimento alla stanza a cui l'infermiere è associato
+        self.store = store                  # Riferimento alla stanza a cui l'infermiere è associato
         self.name = self.name_unique()
-        self.entity_who_reserved = []    # Paziente che hanno prenotato il posto (e l'infermiere)
-        self.entity_processed = []      # Pazienti attualmente in fase di processamento (ricovero)
+        self.entity_who_reserved = []       # Pazienti che hanno prenotato il posto nella stanza dove si trova l'infermiere
+        self.entity_processed = []          # Pazienti attualmente in fase di processamento (ricovero)
 
         # Collezione di dati per registrare la differenza di skill tra paziente e infermiere
         self.delta_skill_level = DataWithoutTime(name="delta_skill_level"+self.name)
