@@ -10,14 +10,22 @@ Il framework è generalizzabile: le classi astratte possono essere estese per al
 - **Event**: definisce gli eventi e il metodo `event_manager`.  
 - **Entity**: rappresenta entità (es. pazienti) con stato e posizione.  
 - **Resource**: risorse generiche (stato: idle, busy, failed, reserved).  
-- **Queue / Queues.py**: code prioritarie con gestione lista doppiamente collegata.  
+- **Queue**: code prioritarie con gestione lista doppiamente collegata.  
 - **Store**: spazi limitati (stanze).  
 - **Distribution**: generazione di campioni da distribuzioni probabilistiche.  
 - **DataCollection**: raccolta dati (temporali, non temporali, statistiche aggregate).
 
 ## Caso Studio Ospedaliero
-- Pazienti arrivano, attendono in coda per i dottori, poi eventualmente ricevono assistenza in stanze con infermieri.  
+Entity:
+- Pazienti
+Resource:
+- Dottori
+- Infermieri
+Eventi principali:
+`Arrival`, `Start/EndProcessDoctor`, `Start/EndProcessNurse`, `Failure`, `Recovery`.
+
+Funzionalità supportate:
 - Gestione code con priorità e stanze con capacità limitata.  
 - Supporta assenze temporanee di dottori e infermieri.  
-- Eventi principali: `Arrival`, `Start/EndProcessDoctor`, `Start/EndProcessNurse`, `Failure`, `Recovery`.
+
 
